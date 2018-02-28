@@ -49,6 +49,7 @@ import logging
 
 ## TODO:
 #   - Read config from file
+#   - Save defaults to config file
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG,
@@ -58,11 +59,19 @@ logging.basicConfig(level=logging.DEBUG,
 ## Send the ZIP archive to the server
 def main():
     parser = argparse.ArgumentParser(description='md2pdf client - connect to an md2pdf server and create a PDF file')
-    parser.add_argument('file', nargs=1, help="Input Markdown file to be converted")
-    parser.add_argument('-s', '--server', help="Server address to request PDF generation from. Use hostname or IP address, and port number if required (i.e. 127.0.0.1:9090)", default="127.0.0.1:9090")
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument('-f','--file', nargs=1, metavar=("FILEPATH"), help="Input Markdown file to be converted")
+    group.add_argument('--set-default', nargs=2, metavar=("OPTION", "VALUE"), help="Change another option's default value. Use the full argument name, separated by a space, e.g.: '--set-default proto https'")
+    parser.add_argument('-s', '--server', metavar=("ADDRESS"), help="Server address to request PDF generation from. Use hostname or IP address, and port number if required (i.e. 127.0.0.1:9090)", default="127.0.0.1:9090")
     parser.add_argument('--proto', help="Protocol to use", default="http", choices=["http", "https"])
 
     args = parser.parse_args()
+
+    ## TODO: Implement setting and storing the default values
+
+    ## If file has not been given, exit at this point
+    if not args.file:
+        sys.exit()
 
     filename = args.file[0]
     server_address = args.server
