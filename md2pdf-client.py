@@ -16,24 +16,6 @@ GNU Affero General Public License for more details.
 
 You should have received a copy of the GNU Affero General Public License
 along with this program. If not, see <http://www.gnu.org/licenses/>.
-
-
-
-usage: md2pdf-client.py [-h] [-s SERVER] [--proto {http,https}] file
-
-md2pdf client - connect to an md2pdf server and create a PDF file
-
-positional arguments:
-  file                  Input Markdown file to be converted
-
-optional arguments:
-  -h, --help            show this help message and exit
-  -s SERVER, --server SERVER
-                        Server address to request PDF generation from. Use
-                        hostname or IP address, and port number if required
-                        (i.e. 127.0.0.1:9090)
-  --proto {http,https}  Protocol to use
-
 '''
 
 import argparse
