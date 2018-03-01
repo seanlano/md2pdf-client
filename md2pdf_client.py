@@ -44,8 +44,14 @@ def main():
 
     ## Read the config file, or create it if it doesn't exist
     # TODO: Support Windows for this
-    config_path = os.path.expanduser("~")
-    config_path = os.path.join(config_path, ".md2pdf.yaml")
+    # Try and see if we are running as an Ubuntu Snap package
+    try:
+        config_path = os.environ["SNAP_USER_COMMON"]
+        config_path = os.path.join(config_path, "md2pdf.yaml")
+    except (KeyError):
+        # This would fail on a 'normal' Linux install, so use ~/ instead
+        config_path = os.path.expanduser("~")
+        config_path = os.path.join(config_path, ".md2pdf.yaml")
 
     # Try to open the file, if it exists
     have_config = False
