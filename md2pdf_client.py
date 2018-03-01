@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 '''
-md2pdf-client: A client application to render a Markdown file into a PDF via a
+md2pdf_client: A client application to render a Markdown file into a PDF via a
 connection to an md2pdf server.
 Copyright (C) 2018  Sean Lanigan, Extel Technologies
 
@@ -50,21 +50,21 @@ def main():
     # Try to open the file, if it exists
     have_config = False
     try:
-        config_file = open(config_path, 'rt')
+        config_file = open(config_path, 'rt', encoding="utf-8")
         have_config = True
     except (FileNotFoundError):
         logging.warning("Config file not found at '%s', will create one with defaults", config_path)
 
     if not have_config:
         # Create a file with default values in it
-        config_file = open(config_path, 'wt')
+        config_file = open(config_path, 'wt', encoding="utf-8")
         conf = {}
         conf["server"] = def_server
         conf["proto"] = def_proto
         yaml.dump(conf, config_file)
         # Write out the file, then read from it again
         config_file.close()
-        config_file = open(config_path, 'rt')
+        config_file = open(config_path, 'rt', encoding="utf-8")
 
     conf = yaml.load(config_file)
     config_file.close()
@@ -90,7 +90,7 @@ def main():
             logging.critical("Invalid default setting '%s'", args.set_default[0])
             sys.exit()
         # Save new config file
-        with open(config_path, 'wt') as config_file:
+        with open(config_path, 'wt', encoding="utf-8") as config_file:
             logging.info("Setting default %s value to '%s'", args.set_default[0], args.set_default[1])
             conf[args.set_default[0]] = args.set_default[1]
             yaml.dump(conf, config_file)
@@ -108,7 +108,7 @@ def main():
 
     ## Check that the given file is a text file
     try:
-        in_file = open(filename, 'rt')
+        in_file = open(filename, 'rt', encoding="utf-8")
     except (OSError):
         logging.critical("Could not open file %s", filename)
         raise
@@ -163,7 +163,7 @@ def main():
         ## Write sanitised file to disk
         sanitised_filename = os.path.join(tmpdirname, base_filename)
         logging.debug("Writing sanitised MD file to '%s'", sanitised_filename)
-        with open(sanitised_filename, 'w') as sanitised_file:
+        with open(sanitised_filename, 'w', encoding="utf-8") as sanitised_file:
             print(sanitised_file_str, file=sanitised_file)
 
         # Debug: print all files in tmp folder
