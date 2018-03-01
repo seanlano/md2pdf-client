@@ -28,28 +28,73 @@ import sys
 import glob
 import tempfile
 import logging
+from ruamel.yaml import YAML
 
-## TODO:
-#   - Read config from file
-#   - Save defaults to config file
+yaml = YAML()
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG,
                     format='%(levelname)-7s: %(message)s'
                     )
 
-## Send the ZIP archive to the server
 def main():
+    ## Hard-coded defaults, used if no config file exists
+    def_server = "127.0.0.1:9090"
+    def_proto = "http"
+
+    ## Read the config file, or create it if it doesn't exist
+    # TODO: Support Windows for this
+    config_path = os.path.expanduser("~")
+    config_path = os.path.join(config_path, ".md2pdf.yaml")
+
+    # Try to open the file, if it exists
+    have_config = False
+    try:
+        config_file = open(config_path, 'rt')
+        have_config = True
+    except (FileNotFoundError):
+        logging.warning("Config file not found at '%s', will create one with defaults", config_path)
+
+    if not have_config:
+        # Create a file with default values in it
+        config_file = open(config_path, 'wt')
+        conf = {}
+        conf["server"] = def_server
+        conf["proto"] = def_proto
+        yaml.dump(conf, config_file)
+        # Write out the file, then read from it again
+        config_file.close()
+        config_file = open(config_path, 'rt')
+
+    conf = yaml.load(config_file)
+    config_file.close()
+
+    def_server = conf["server"]
+    def_proto = conf["proto"]
+
+
+    ## Parse the command-line arguments
     parser = argparse.ArgumentParser(description='md2pdf client - connect to an md2pdf server and create a PDF file')
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument('-f','--file', nargs=1, metavar=("FILEPATH"), help="Input Markdown file to be converted")
-    group.add_argument('--set-default', nargs=2, metavar=("OPTION", "VALUE"), help="Change another option's default value. Use the full argument name, separated by a space, e.g.: '--set-default proto https'")
-    parser.add_argument('-s', '--server', metavar=("ADDRESS"), help="Server address to request PDF generation from. Use hostname or IP address, and port number if required (i.e. 127.0.0.1:9090)", default="127.0.0.1:9090")
-    parser.add_argument('--proto', help="Protocol to use", default="http", choices=["http", "https"])
+    group.add_argument('--set-default', nargs=2, metavar=("OPTION", "VALUE"), help="Change a default value for an option. Use the full argument name, separated by a space, e.g.: '--set-default proto https'")
+    parser.add_argument('-s', '--server', metavar=("ADDRESS"), help="Server address to request PDF generation from. Use hostname or IP address, and port number if required (i.e. 127.0.0.1:9090)", default=def_server)
+    parser.add_argument('--proto', help="Protocol to use", default=def_proto, choices=["http", "https"])
 
     args = parser.parse_args()
 
-    ## TODO: Implement setting and storing the default values
+
+    ## Set new defaults, if command is given
+    if args.set_default:
+        if args.set_default[0] not in {"server", "proto"}:
+            logging.critical("Invalid default setting '%s'", args.set_default[0])
+            sys.exit()
+        # Save new config file
+        with open(config_path, 'wt') as config_file:
+            logging.info("Setting default %s value to '%s'", args.set_default[0], args.set_default[1])
+            conf[args.set_default[0]] = args.set_default[1]
+            yaml.dump(conf, config_file)
+
 
     ## If file has not been given, exit at this point
     if not args.file:
