@@ -106,11 +106,13 @@ def main():
     if not args.file:
         sys.exit()
 
-    filename = args.file[0]
+    filename = os.path.abspath(args.file[0])
     server_address = args.server
     proto_string = args.proto
 
     logging.info("Starting md2pdf client, with input file '%s'", filename)
+    # cd into the folder that contains the file
+    os.chdir(os.path.dirname(filename))
 
     ## Check that the given file is a text file
     try:
