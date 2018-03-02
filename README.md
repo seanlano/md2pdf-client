@@ -1,5 +1,7 @@
 # md2pdf Client
 
+![md2pdf icon](icon.svg)
+
 ## Introduction
 
 md2pdf is a little project that aims to make it easy to produce
@@ -84,3 +86,7 @@ python3 md2pdf_client.py -f <file>
 
 This project is released under the terms of the GNU Affero GPL version 3 (or
 later). Please see [LICENSE](LICENSE) for details.
+
+## Thanks
+
+The base of my (very crappy) icon is from the standard [GNOME icons](https://commons.wikimedia.org/wiki/GNOME_Desktop_icons). These are GPL licensed. 
