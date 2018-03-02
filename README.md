@@ -59,6 +59,26 @@ optional arguments:
   --proto {http,https}  Protocol to use
 ```
 
+## Installation
+
+### Snap Package 
+
+`md2pdf-client` is available as an Ubuntu Snap package. You can install it with :
+
+```
+$ sudo snap install --candidate md2pdf-client
+```
+I haven't yet release it to the "stable" category - it needs some more testing before that happens. 
+
+The packaging is done automatically by Launchpad, based on the Snapcraft config [in this repo](https://github.com/seanlano/md2pdf-client-snap). 
+
+### Direct Python script
+
+It can also be run as a Python script: 
+
+```
+python3 md2pdf_client.py -f <file>
+```
 
 ## License
 
