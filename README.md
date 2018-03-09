@@ -29,11 +29,8 @@ generation and then share the result with those who need it.
 ## Client application
 
 This simple Python program is the md2pdf client application. It is intended to
-be used with an `md2pdf-webserver` instance, running locally or remotely.
-
-
-_**NOTE**: md2pdf-webserver is still a work in progress, and will be released
-soon. Stay tuned!_
+be used with an `md2pdf-webserver` instance, running locally or remotely. 
+See [the md2pdf-webserver hompage for more information](https://github.com/seanlano/md2pdf-webserver)
 
 
 ## Usage
