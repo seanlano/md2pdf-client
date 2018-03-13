@@ -86,6 +86,7 @@ def main():
     group.add_argument('--set-default', nargs=2, metavar=("OPTION", "VALUE"), help="Change a default value for an option. Use the full argument name, separated by a space, e.g.: '--set-default proto https'")
     parser.add_argument('-s', '--server', metavar=("ADDRESS"), help="Server address to request PDF generation from. Use hostname or IP address, and port number if required (i.e. 127.0.0.1:9090)", default=def_server)
     parser.add_argument('--proto', help="Protocol to use", default=def_proto, choices=["http", "https"])
+    parser.add_argument('-t', '--template', metavar=("TEMPLATE"), help="Template to use, instead of the server default (include the file extension)")
 
     args = parser.parse_args()
 
@@ -188,9 +189,12 @@ def main():
     # tmpdirname will be deleted now
 
     ## Upload the ZIP file to the md2pdf-server address
-
-    url = proto_string + "://" + server_address + "/upload"
     headers = {'x-method': 'MD-to-PDF'}
+    if args.template:
+        logging.info("Using template override '%s'", args.template)
+        headers['x-latex-template'] = args.template
+        logging.debug(headers)
+    url = proto_string + "://" + server_address + "/upload"
     files = {'ufile': open(output_zip_filename, 'rb')}
 
     send = requests.post(url, headers=headers, files=files)
