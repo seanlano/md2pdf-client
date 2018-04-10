@@ -207,13 +207,13 @@ def main():
         get_string = proto_string + "://" + server_address + "/fetch?hashsum=" + hashsum
 
         # Try several times to get the file, pausing in between
-        attempts = 3
+        attempts = 4
         have_pdf = False
 
-        logging.info("Will wait 10 seconds then try to download PDF")
+        logging.info("Will wait 7 seconds then try to download PDF")
 
         while attempts > 0:
-            time.sleep(10)
+            time.sleep(7)
             receive = requests.get(get_string)
 
             if(receive.status_code == 200):
@@ -233,7 +233,7 @@ def main():
                 else:
                     # Decrement and try again
                     attempts = attempts - 1
-                    logging.info("Did not receive a PDF file yet, will try again in 10 seconds")
+                    logging.info("Did not receive a PDF file yet, will try again in 7 seconds")
                     if attempts == 0:
                         last_file = receive_name
 
