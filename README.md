@@ -29,7 +29,7 @@ generation and then share the result with those who need it.
 ## Client application
 
 This simple Python program is the md2pdf client application. It is intended to
-be used with an `md2pdf-webserver` instance, running locally or remotely. 
+be used with an `md2pdf-webserver` instance, running locally or remotely.
 See [the md2pdf-webserver hompage for more information](https://github.com/seanlano/md2pdf-webserver)
 
 
@@ -38,16 +38,17 @@ See [the md2pdf-webserver hompage for more information](https://github.com/seanl
 Usage is quite simple, run `md2pdf-client -h` for more information:
 
 ```
-usage: md2pdf_client.py [-h] (-f FILEPATH | --set-default OPTION VALUE)
-                        [-s ADDRESS[:PORT]] [--proto {http,https}]
-                        [-t TEMPLATE]
+usage: md2pdf_client.py [-h] [--set-default OPTION VALUE] [-s ADDRESS[:PORT]]
+                        [--proto {http,https}] [-t TEMPLATE]
+                        [FILEPATH]
 
 md2pdf client - connect to an md2pdf server and create a PDF file
 
+positional arguments:
+  FILEPATH              Input Markdown file to be converted
+
 optional arguments:
   -h, --help            show this help message and exit
-  -f FILEPATH, --file FILEPATH
-                        Input Markdown file to be converted
   --set-default OPTION VALUE
                         Change a default value for an option. Use the full
                         argument name, separated by a space, e.g.: '--set-
@@ -66,15 +67,15 @@ optional arguments:
 
 ## Usage hints
 
-- Don't forget to set a default port when you set the default server! You probably won't be using port 80, so make sure you set it correctly, with something like `md2pdf-client --set-default server 1.2.3.4:9090` or `md2pdf-client --set-default server hostname.tld:9090`. Don't include the protocol here. 
+- Don't forget to set a default port when you set the default server! You probably won't be using port 80, so make sure you set it correctly, with something like `md2pdf-client --set-default server 1.2.3.4:9090` or `md2pdf-client --set-default server hostname.tld:9090`. Don't include the protocol here.
 - `md2pdf-webserver` by default doesn't do HTTPS - but it would be possible to put it behind a HTTPS reverse proxy. If that is the case, don't forget to set the default protocol with `md2pdf-client --set-default proto https`
 - If you use the `--template` option, don't forget that the template must also exist in the server - you can't use a local template (at least not yet).
-- If something doesn't work on the server end, you should get a `.log` file in the same directory as your input Markdown file - take a look in there for more information. 
+- If something doesn't work on the server end, you should get a `.log` file in the same directory as your input Markdown file - take a look in there for more information.
 - If something doesn't work on the client end, it can be helpful to run `md2pdf-client` from the command line to check the output.
 
 ## Installation
 
-### Snap Package 
+### Snap Package
 
 `md2pdf-client` is available as an Ubuntu Snap package. You can install it with :
 
@@ -82,11 +83,11 @@ optional arguments:
 $ sudo snap install md2pdf-client
 ```
 
-The packaging is done automatically by Launchpad, based on the Snapcraft config [in this repo](https://github.com/seanlano/md2pdf-client-snap). 
+The packaging is done automatically by Launchpad, based on the Snapcraft config [in this repo](https://github.com/seanlano/md2pdf-client-snap).
 
 ### Direct Python script
 
-It can also be run as a Python script: 
+It can also be run as a Python script:
 
 ```
 python3 md2pdf_client.py -f <file>
@@ -99,4 +100,4 @@ later). Please see [LICENSE](LICENSE) for details.
 
 ## Thanks
 
-The base of my (very crappy) icon is from the standard [GNOME icons](https://commons.wikimedia.org/wiki/GNOME_Desktop_icons). These are GPL licensed. 
+The base of my (very crappy) icon is from the standard [GNOME icons](https://commons.wikimedia.org/wiki/GNOME_Desktop_icons). These are GPL licensed.

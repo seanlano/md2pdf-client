@@ -80,9 +80,8 @@ def main():
 
     ## Parse the command-line arguments
     parser = argparse.ArgumentParser(description='md2pdf client - connect to an md2pdf server and create a PDF file')
-    group = parser.add_mutually_exclusive_group(required=True)
-    group.add_argument('-f','--file', nargs=1, metavar=("FILEPATH"), help="Input Markdown file to be converted")
-    group.add_argument('--set-default', nargs=2, metavar=("OPTION", "VALUE"), help="Change a default value for an option. Use the full argument name, separated by a space, e.g.: '--set-default proto https' or '--set-default server 192.168.1.1:9090'")
+    parser.add_argument('file', nargs="?", metavar=("FILEPATH"), help="Input Markdown file to be converted")
+    parser.add_argument('--set-default', nargs=2, metavar=("OPTION", "VALUE"), help="Change a default value for an option. Use the full argument name, separated by a space, e.g.: '--set-default proto https' or '--set-default server 192.168.1.1:9090'")
     parser.add_argument('-s', '--server', metavar=("ADDRESS[:PORT]"), help="Server address to request PDF generation from. Use hostname or IP address, and port number if required (i.e. '127.0.0.1:9090', or 'my-host.com:8888'). If port is not specified, port 80 will be used", default=def_server)
     parser.add_argument('--proto', help="Protocol to use", default=def_proto, choices=["http", "https"])
     parser.add_argument('-t', '--template', metavar=("TEMPLATE"), help="Template to use, instead of the server default (include the file extension)")
@@ -100,13 +99,15 @@ def main():
             logging.info("Setting default %s value to '%s'", args.set_default[0], args.set_default[1])
             conf[args.set_default[0]] = args.set_default[1]
             yaml.dump(conf, config_file)
+            sys.exit()
 
 
     ## If file has not been given, exit at this point
     if not args.file:
+        logging.critical("Input file not given. Use -h flag for help.")
         sys.exit()
 
-    filename = os.path.abspath(args.file[0])
+    filename = os.path.abspath(args.file)
     server_address = args.server
     proto_string = args.proto
 
