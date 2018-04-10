@@ -79,9 +79,8 @@ optional arguments:
 `md2pdf-client` is available as an Ubuntu Snap package. You can install it with :
 
 ```
-$ sudo snap install --candidate md2pdf-client
+$ sudo snap install md2pdf-client
 ```
-I haven't yet released it to the "stable" category - it needs some more testing before that happens. 
 
 The packaging is done automatically by Launchpad, based on the Snapcraft config [in this repo](https://github.com/seanlano/md2pdf-client-snap). 
 
