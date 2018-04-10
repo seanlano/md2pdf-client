@@ -43,7 +43,6 @@ def main():
     def_proto = "http"
 
     ## Read the config file, or create it if it doesn't exist
-    # TODO: Support Windows for this
     # Try and see if we are running as an Ubuntu Snap package
     try:
         config_path = os.environ["SNAP_USER_COMMON"]
@@ -83,8 +82,8 @@ def main():
     parser = argparse.ArgumentParser(description='md2pdf client - connect to an md2pdf server and create a PDF file')
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument('-f','--file', nargs=1, metavar=("FILEPATH"), help="Input Markdown file to be converted")
-    group.add_argument('--set-default', nargs=2, metavar=("OPTION", "VALUE"), help="Change a default value for an option. Use the full argument name, separated by a space, e.g.: '--set-default proto https'")
-    parser.add_argument('-s', '--server', metavar=("ADDRESS"), help="Server address to request PDF generation from. Use hostname or IP address, and port number if required (i.e. 127.0.0.1:9090)", default=def_server)
+    group.add_argument('--set-default', nargs=2, metavar=("OPTION", "VALUE"), help="Change a default value for an option. Use the full argument name, separated by a space, e.g.: '--set-default proto https' or '--set-default server 192.168.1.1:9090'")
+    parser.add_argument('-s', '--server', metavar=("ADDRESS[:PORT]"), help="Server address to request PDF generation from. Use hostname or IP address, and port number if required (i.e. '127.0.0.1:9090', or 'my-host.com:8888'). If port is not specified, port 80 will be used", default=def_server)
     parser.add_argument('--proto', help="Protocol to use", default=def_proto, choices=["http", "https"])
     parser.add_argument('-t', '--template', metavar=("TEMPLATE"), help="Template to use, instead of the server default (include the file extension)")
 
@@ -127,7 +126,7 @@ def main():
 
         # Create "images" subfolder
         base_filename = os.path.split(filename)[1]
-        first_word = re.search("(\w*)", filename)
+        first_word = re.search("(\w*)", base_filename)
         base_image_dirname = first_word.group(1)+"_images"
         images_filepath = os.path.join(tmpdirname, base_image_dirname)
 
