@@ -38,8 +38,9 @@ See [the md2pdf-webserver hompage for more information](https://github.com/seanl
 Usage is quite simple, run `md2pdf-client -h` for more information:
 
 ```
-usage: md2pdf-client.py [-h] (-f FILEPATH | --set-default OPTION VALUE)
-                        [-s ADDRESS] [--proto {http,https}]
+usage: md2pdf_client.py [-h] (-f FILEPATH | --set-default OPTION VALUE)
+                        [-s ADDRESS[:PORT]] [--proto {http,https}]
+                        [-t TEMPLATE]
 
 md2pdf client - connect to an md2pdf server and create a PDF file
 
@@ -48,15 +49,28 @@ optional arguments:
   -f FILEPATH, --file FILEPATH
                         Input Markdown file to be converted
   --set-default OPTION VALUE
-                        Change another option's default value. Use the full
+                        Change a default value for an option. Use the full
                         argument name, separated by a space, e.g.: '--set-
-                        default proto https'
-  -s ADDRESS, --server ADDRESS
+                        default proto https' or '--set-default server
+                        192.168.1.1:9090'
+  -s ADDRESS[:PORT], --server ADDRESS[:PORT]
                         Server address to request PDF generation from. Use
                         hostname or IP address, and port number if required
-                        (i.e. 127.0.0.1:9090)
+                        (i.e. '127.0.0.1:9090', or 'my-host.com:8888'). If
+                        port is not specified, port 80 will be used
   --proto {http,https}  Protocol to use
+  -t TEMPLATE, --template TEMPLATE
+                        Template to use, instead of the server default
+                        (include the file extension)
 ```
+
+## Usage hints
+
+- Don't forget to set a default port when you set the default server! You probably won't be using port 80, so make sure you set it correctly, with something like `md2pdf-client --set-default server 1.2.3.4:9090` or `md2pdf-client --set-default server hostname.tld:9090`. Don't include the protocol here. 
+- `md2pdf-webserver` by default doesn't do HTTPS - but it would be possible to put it behind a HTTPS reverse proxy. If that is the case, don't forget to set the default protocol with `md2pdf-client --set-default proto https`
+- If you use the `--template` option, don't forget that the template must also exist in the server - you can't use a local template (at least not yet).
+- If something doesn't work on the server end, you should get a `.log` file in the same directory as your input Markdown file - take a look in there for more information. 
+- If something doesn't work on the client end, it can be helpful to run `md2pdf-client` from the command line to check the output.
 
 ## Installation
 
@@ -67,7 +81,7 @@ optional arguments:
 ```
 $ sudo snap install --candidate md2pdf-client
 ```
-I haven't yet release it to the "stable" category - it needs some more testing before that happens. 
+I haven't yet released it to the "stable" category - it needs some more testing before that happens. 
 
 The packaging is done automatically by Launchpad, based on the Snapcraft config [in this repo](https://github.com/seanlano/md2pdf-client-snap). 
 
