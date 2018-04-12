@@ -18,6 +18,9 @@ You should have received a copy of the GNU Affero General Public License
 along with this program. If not, see <http://www.gnu.org/licenses/>.
 '''
 
+global __version__
+__version__ = "0.2.2"
+
 import argparse
 import requests
 import time
@@ -79,7 +82,7 @@ def main():
 
 
     ## Parse the command-line arguments
-    parser = argparse.ArgumentParser(description='md2pdf client - connect to an md2pdf server and create a PDF file')
+    parser = argparse.ArgumentParser(description='md2pdf client v' + __version__ + ' - connect to an md2pdf server and create a PDF file')
     parser.add_argument('file', nargs="?", metavar=("FILEPATH"), help="Input Markdown file to be converted")
     parser.add_argument('--set-default', nargs=2, metavar=("OPTION", "VALUE"), help="Change a default value for an option. Use the full argument name, separated by a space, e.g.: '--set-default proto https' or '--set-default server 192.168.1.1:9090'")
     parser.add_argument('-s', '--server', metavar=("ADDRESS[:PORT]"), help="Server address to request PDF generation from. Use hostname or IP address, and port number if required (i.e. '127.0.0.1:9090', or 'my-host.com:8888'). If port is not specified, port 80 will be used", default=def_server)

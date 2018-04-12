@@ -1,14 +1,19 @@
 #! /usr/bin/env python3
 from setuptools import setup
+import re
 
 package_name = 'md2pdf_client'
 filename = package_name + '.py'
 
 def get_version():
-    import subprocess
-    label = subprocess.check_output(["git", "describe"]).strip().decode()
+    with open(filename) as f:
+        for line in f:
+            version = re.search("__version__\s?=\s?\"(\d+\.\d+\.\d+)\"", line)
+            if version:
+                return version.group(1)
 
-    return label.replace("v","")
+    # Return 0.0.0 if version not found
+    return label.replace("0.0.0")
 
 
 def get_long_description():
