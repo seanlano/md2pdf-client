@@ -200,12 +200,17 @@ def main():
     url = proto_string + "://" + server_address + "/upload"
     files = {'ufile': open(output_zip_filename, 'rb')}
 
-    send = requests.post(url, headers=headers, files=files)
-
-    logging.info("Response from server: %s", send.text)
+    try:
+        send = requests.post(url, headers=headers, files=files)
+        status_code = send.status_code
+        logging.info("Response from server: %s", send.text)
+    except requests.exceptions.ConnectionError as err:
+        logging.error("Server connection error - %s" % err)
+        status_code = -1
+    
 
     ## Request the PDF from the server
-    if(send.status_code == 200):
+    if(status_code == 200):
         hashsum = send.cookies['hashsum']
 
         get_string = proto_string + "://" + server_address + "/fetch?hashsum=" + hashsum
@@ -258,8 +263,11 @@ def main():
                 break
 
     else:
-        print("Error when sending to server")
-        print(send)
+        if status_code == -1:
+            print("Failed to connect to server - check the server address is configured correctly")
+        else:
+            print("Error when sending to server")
+            print("Server response: %s" % send)
         while True:
             n = input("Press enter to close")
             break
