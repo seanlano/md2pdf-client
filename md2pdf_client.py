@@ -96,19 +96,19 @@ def main():
     if args.set_default:
         if args.set_default[0] not in {"server", "proto"}:
             logging.critical("Invalid default setting '%s'", args.set_default[0])
-            sys.exit()
+            return -1
         # Save new config file
         with open(config_path, 'wt', encoding="utf-8") as config_file:
             logging.info("Setting default %s value to '%s'", args.set_default[0], args.set_default[1])
             conf[args.set_default[0]] = args.set_default[1]
             yaml.dump(conf, config_file)
-            sys.exit()
+            return 0
 
 
     ## If file has not been given, exit at this point
     if not args.file:
         logging.critical("Input file not given. Use -h flag for help.")
-        sys.exit()
+        return -2
 
     filename = os.path.abspath(args.file)
     server_address = args.server
@@ -206,7 +206,7 @@ def main():
         logging.info("Response from server: %s", send.text)
     except requests.exceptions.ConnectionError as err:
         logging.error("Server connection error - %s" % err)
-        status_code = -1
+        status_code = -3
     
 
     ## Request the PDF from the server
@@ -255,23 +255,20 @@ def main():
 
         if have_pdf:
             logging.info("Successfully received PDF file: " + last_file)
+            return 0
         else:
             print("Unable to receive PDF file, check log for more information: " + last_file)
-            print()
-            while True:
-                n = input("Press enter to close")
-                break
+            input("\nPress enter to close ")
+            return -4
 
     else:
-        if status_code == -1:
+        if status_code == -3:
             print("Failed to connect to server - check the server address is configured correctly")
         else:
             print("Error when sending to server")
             print("Server response: %s" % send)
-        while True:
-            n = input("Press enter to close")
-            break
-
+        input("\nPress enter to close ")
+        return -5
     # end main()
 
 if __name__ == '__main__':
