@@ -27,20 +27,92 @@ import time
 import re
 import os
 import shutil
+#from sys import exit
 import sys
 import glob
 import tempfile
 import logging
 from ruamel.yaml import YAML
+from tkinter import *
+from tkinter import ttk, messagebox, filedialog, font
 
 yaml = YAML()
+selected_file = None
+selected_file_full = ''
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG,
                     format='%(levelname)-7s: %(message)s'
                     )
 
+def select_file():
+    fn = filedialog.askopenfilename()
+    if fn:
+        global selected_file, selected_file_full
+        selected_file_full = fn
+        selected_file.set(fn.split('\\' if len(fn.split('\\'))>1 else '/')[-1])
+        return fn
+    else:
+        #messagebox.showwarning("Warning", "No file selected")
+        return None
+
+def make_pdf():
+    # TODO: FILL IN STUB
+    pass
+
+def config_gui(given_file = None):
+    global selected_file
+    
+    # GUI settings
+    WINDOW_TITLE = 'md2pdf client'
+    FILE_NAME_WIDTH = 20
+    FONT = ('Verdana', 11)
+    
+    # Setup basic canvas for widgets
+    root = Tk()
+    root.title(WINDOW_TITLE)
+    font.nametofont('TkDefaultFont').configure(family=FONT[0], size=FONT[1])
+    ttk.Style().configure("TButton", padding=5)
+    mainframe = ttk.Frame(root)
+    mainframe.grid(sticky=(N, W, E, S))
+    mainframe.columnconfigure(0, weight=0)
+    mainframe.columnconfigure(1, weight=1)
+    mainframe.columnconfigure(2, weight=1)
+    #mainframe.rowconfigure(0, weight=1)
+    
+    # Setup gui widgets
+    select_button = ttk.Button(mainframe, text="Select file", command=select_file)
+    select_button.grid(row=0, column=0, columnspan=3, sticky=(N,S,W,E))
+    ttk.Label(mainframe, text="Selected file:").grid(row=1,column=0, sticky=(N,S,E))
+    selected_file = StringVar()
+    selected_file_entry = ttk.Entry(mainframe, textvariable=selected_file, state="readonly")
+    selected_file_entry.grid(row=1, column=1, columnspan=2, sticky=(N,S,W,E))
+    
+    ttk.Label(mainframe, text="Status:").grid(row=2, column=0, sticky=(N,S,E))
+    current_status = StringVar()
+    current_status.set('Ready')
+    current_status_entry = ttk.Entry(mainframe, textvariable=current_status, state="readonly")
+    current_status_entry.grid(row=2, column=1, columnspan=2, sticky=(N,S,W,E))
+    
+    pdf_button = ttk.Button(mainframe, text="Get PDF", width=FILE_NAME_WIDTH, command=make_pdf)
+    pdf_button.grid(row=3, column=0, columnspan=2, sticky=(N,S,W,E))
+    exit_button = ttk.Button(mainframe, text="Exit", command=exit)
+    exit_button.grid(row=3, column=2, sticky=(N,S,W,E))
+    
+    if given_file:
+        selected_file.set(given_file)
+        make_pdf()
+    
+    for child in mainframe.winfo_children():
+        child.grid_configure(padx=3, pady=3)
+    
+    return root
+
 def main():
+    # HACK - To be removed post-testing
+    config_gui().mainloop()
+    return
+    
     ## Hard-coded defaults, used if no config file exists
     def_server = "127.0.0.1:9090"
     def_proto = "http"
