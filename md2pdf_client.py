@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 '''
 
 global __version__
-__version__ = "1.0.1"
+__version__ = "1.0.2"
 
 import argparse
 import requests
@@ -207,7 +207,7 @@ def main():
     except requests.exceptions.ConnectionError as err:
         logging.error("Server connection error - %s" % err)
         status_code = -3
-    
+
 
     ## Request the PDF from the server
     if(status_code == 200):
@@ -220,6 +220,9 @@ def main():
         have_pdf = False
 
         logging.info("Will wait 7 seconds then try to download PDF")
+
+        # Remove the ZIP archive
+        os.remove(output_zip_filename)
 
         while attempts > 0:
             time.sleep(7)
