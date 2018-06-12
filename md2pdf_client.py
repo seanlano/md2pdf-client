@@ -133,6 +133,8 @@ def main():
 
     ## Upload the ZIP file to the md2pdf-server address
     headers = {'x-method': 'MD-to-PDF'}
+    headers['x-client-application'] = "md2pdf-client"
+    headers['x-client-version'] = __version__
     if args.template:
         logging.info("Using template override '%s'", args.template)
         headers['x-latex-template'] = args.template
