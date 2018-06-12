@@ -139,6 +139,10 @@ def main():
         logging.info("Using template override '%s'", args.template)
         headers['x-latex-template'] = args.template
         logging.debug(headers)
+    if args.compare:
+        logging.debug("Setting 'compare mode' header")
+        headers['x-latex-compare'] = "true"
+        logging.debug(headers)
     url = proto_string + "://" + server_address + "/upload"
     files = {'ufile': open(output_zip_filename, 'rb')}
 
