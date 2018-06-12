@@ -84,6 +84,7 @@ def main():
     ## Parse the command-line arguments
     parser = argparse.ArgumentParser(description='md2pdf client v' + __version__ + ' - connect to an md2pdf server and create a PDF file')
     parser.add_argument('file', nargs="?", metavar=("FILEPATH"), help="Input Markdown file to be converted")
+    parser.add_argument('-c', '--compare', nargs=1, metavar=("FILEPATH"), help="Activates 'compare' mode. Specify the file to compare changes with, e.g.: 'md2pdf-client --compare path/file-old.md path/file-new.md'")
     parser.add_argument('--set-default', nargs=2, metavar=("OPTION", "VALUE"), help="Change a default value for an option. Use the full argument name, separated by a space, e.g.: '--set-default proto https' or '--set-default server 192.168.1.1:9090'")
     parser.add_argument('-s', '--server', metavar=("ADDRESS[:PORT]"), help="Server address to request PDF generation from. Use hostname or IP address, and port number if required (i.e. '127.0.0.1:9090', or 'my-host.com:8888'). If port is not specified, port 80 will be used", default=def_server)
     parser.add_argument('--proto', help="Protocol to use", default=def_proto, choices=["http", "https"])
@@ -114,82 +115,21 @@ def main():
     server_address = args.server
     proto_string = args.proto
 
-    logging.info("Starting md2pdf client, with input file '%s'", filename)
-    # cd into the folder that contains the file
-    os.chdir(os.path.dirname(filename))
+    ## Check for compare mode
+    if args.compare:
+        # Compare mode
+        compare_filename = os.path.abspath(args.compare[0])
+        logging.info("Starting md2pdf client in compare mode, showing changes from '%s' to '%s'", compare_filename, filename)
+        output_zip_filename = createZipCompareMode(compare_filename, filename)
+    else:
+        # Normal mode
+        logging.info("Starting md2pdf client, with input file '%s'", filename)
+        output_zip_filename = createZipNormalMode(filename)
 
-    ## Check that the given file is a text file
-    try:
-        in_file = open(filename, 'rt', encoding="utf-8")
-    except (OSError):
-        logging.critical("Could not open file %s", filename)
-        raise
-
-    with tempfile.TemporaryDirectory() as tmpdirname:
-        logging.debug("Created temporary directory '%s'", tmpdirname)
-
-        # Create "images" subfolder
-        base_filename = os.path.split(filename)[1]
-        first_word = re.search("(\w*)", base_filename)
-        base_image_dirname = first_word.group(1)+"_images"
-        images_filepath = os.path.join(tmpdirname, base_image_dirname)
-
-        if not os.path.exists(images_filepath):
-            os.makedirs(images_filepath)
-        ## Read input file and sanitise if necessary into a local string object
-        sanitised_file_str = ""
-        ## Check if MD file has reference to any images
-        # Look for regex pattern \!\[.*?\]\s*?\(.*?\)
-        image_pattern = re.compile("\!\[.*?\]\s*?\((.*?)\)")
-        for line in in_file:
-            # Check if images need sanitising
-            image_match_original = image_pattern.search(line)
-            if image_match_original:
-                # Update the sanitised version if necessary
-                # Check for the location of the image
-                image_filename = os.path.split(image_match_original.group(1))[1]
-                logging.info("Looking for image file '%s'", image_filename)
-
-                # Copy images to temporary directory
-                image_found = False
-                for root, dirs, files in os.walk("./"):
-                    for file in files:
-                        if file.endswith(image_filename):
-                            copy_filename = os.path.join(root, file)
-                            # Copy image to temporary directory
-                            logging.info("Found image file: '%s'", copy_filename)
-                            shutil.copy(copy_filename, images_filepath)
-                            dest_filename = os.path.join(base_image_dirname, file)
-                            dest_filename = os.path.join(".", dest_filename)
-                            logging.debug("New path to image is '%s', updating MD file", dest_filename)
-                            image_found = True
-                            new_line = line.replace(image_match_original.group(1), dest_filename)
-                            sanitised_file_str += new_line
-                            break # Only copy first found image
-                if not image_found:
-                    logging.error("Image not found: '%s'. PDF generation will probably fail", image_filename)
-            else:
-                # Copy across the line as-is
-                sanitised_file_str += line
-
-        ## Write sanitised file to disk
-        sanitised_filename = os.path.join(tmpdirname, base_filename)
-        logging.debug("Writing sanitised MD file to '%s'", sanitised_filename)
-        with open(sanitised_filename, 'w', encoding="utf-8") as sanitised_file:
-            print(sanitised_file_str, file=sanitised_file)
-
-        # Debug: print all files in tmp folder
-        # for root, dirs, files in os.walk(tmpdirname):
-        #     for file in files:
-        #         print(os.path.join(root, file))
-
-        ## Create ZIP of MD file, and any images if required
-        output_zip_filename = os.path.join(os.getcwd(), os.path.splitext(base_filename)[0])
-        shutil.make_archive(output_zip_filename, "zip", tmpdirname)
-        output_zip_filename += ".zip"
-        logging.info("Created ZIP archive '%s'", output_zip_filename)
-
-    # tmpdirname will be deleted now
+    # Ensure output_zip_filename is a string
+    if not isinstance(output_zip_filename, str):
+        logging.critical("The output ZIP path does not seem to be correct")
+        raise TypeError("ZIP path is not a string")
 
     ## Upload the ZIP file to the md2pdf-server address
     headers = {'x-method': 'MD-to-PDF'}
@@ -272,7 +212,142 @@ def main():
             print("Server response: %s" % send)
         input("\nPress enter to close ")
         return -5
-    # end main()
+# end main()
+
+def createZipArchive(input_directory, output_name):
+    'Helper function to create a ZIP archive'
+    ## Create ZIP of input directory
+    shutil.make_archive(output_name, "zip", input_directory)
+    output_name += ".zip"
+    logging.info("Created ZIP archive '%s'", output_name)
+
+    return output_name
+# end createZipArchive()
+
+def createZipNormalMode(input_md):
+    'Helper function to take an input file and produce a ZIP archive'
+    # cd into the folder that contains the file
+    os.chdir(os.path.dirname(input_md))
+
+    ## Check that the given file is a text file
+    try:
+        in_file = open(input_md, 'rt', encoding="utf-8")
+    except (OSError):
+        logging.critical("Could not open file %s", input_md)
+        raise
+
+    with tempfile.TemporaryDirectory() as tmpdirname:
+        logging.debug("Created temporary directory '%s'", tmpdirname)
+
+        # Create "images" subfolder
+        base_filename = os.path.split(input_md)[1]
+        first_word = re.search("(\w*)", base_filename)
+        base_image_dirname = first_word.group(1)+"_images"
+        images_filepath = os.path.join(tmpdirname, base_image_dirname)
+
+        if not os.path.exists(images_filepath):
+            os.makedirs(images_filepath)
+        ## Read input file and sanitise if necessary into a local string object
+        sanitised_file_str = ""
+        ## Check if MD file has reference to any images
+        # Look for regex pattern \!\[.*?\]\s*?\(.*?\)
+        image_pattern = re.compile("\!\[.*?\]\s*?\((.*?)\)")
+        for line in in_file:
+            # Check if images need sanitising
+            image_match_original = image_pattern.search(line)
+            if image_match_original:
+                # Update the sanitised version if necessary
+                # Check for the location of the image
+                image_filename = os.path.split(image_match_original.group(1))[1]
+                logging.info("Looking for image file '%s'", image_filename)
+
+                # Copy images to temporary directory
+                image_found = False
+                for root, dirs, files in os.walk("./"):
+                    for file in files:
+                        if file.endswith(image_filename):
+                            copy_filename = os.path.join(root, file)
+                            # Copy image to temporary directory
+                            logging.info("Found image file: '%s'", copy_filename)
+                            shutil.copy(copy_filename, images_filepath)
+                            dest_filename = os.path.join(base_image_dirname, file)
+                            dest_filename = os.path.join(".", dest_filename)
+                            logging.debug("New path to image is '%s', updating MD file", dest_filename)
+                            image_found = True
+                            new_line = line.replace(image_match_original.group(1), dest_filename)
+                            sanitised_file_str += new_line
+                            break # Only copy first found image
+                if not image_found:
+                    logging.error("Image not found: '%s'. PDF generation will probably fail", image_filename)
+            else:
+                # Copy across the line as-is
+                sanitised_file_str += line
+
+        ## Write sanitised file to disk
+        sanitised_filename = os.path.join(tmpdirname, base_filename)
+        logging.debug("Writing sanitised MD file to '%s'", sanitised_filename)
+        with open(sanitised_filename, 'w', encoding="utf-8") as sanitised_file:
+            print(sanitised_file_str, file=sanitised_file)
+
+        ## Create ZIP of MD file, and any images if required
+        zip_name = os.path.join(os.getcwd(), os.path.splitext(base_filename)[0])
+        output_zip_filename = createZipArchive(tmpdirname, zip_name)
+    # tmpdirname will be deleted now
+
+    return output_zip_filename
+# end createZipNormalMode()
+
+def createZipCompareMode(input_md_old, input_md_new):
+    'Helper function to take two input files and produce a ZIP archive'
+    # cd into the folder that contains the file
+    os.chdir(os.path.dirname(input_md_new))
+
+    with tempfile.TemporaryDirectory() as tmpdirname:
+        logging.debug("Created temporary directory '%s'", tmpdirname)
+
+        for (input_md, input_type) in ((input_md_old, "old"), (input_md_new, "new")):
+            base_filename = os.path.split(input_md)[1]
+            try:
+                with open(input_md, 'rt', encoding="utf-8") as in_file:
+                    logging.debug("Replacing images in file '%s'", input_md)
+                    ## Read input file and sanitise if necessary into a local string object
+                    sanitised_file_str = ""
+                    ## Check if MD file has reference to any images, replace them with an fbox
+                    # Look for regex pattern \!\[(.*?)\]\s*?\(.*?\)\s?(?:{.*?})?
+                    image_remove_pattern = re.compile("\!\[(.*?)\]\s*?\(.*?\)\s?(?:{.*?})?")
+                    for line in in_file:
+                        # Check if images need removing
+                        re_match = image_remove_pattern.search(line)
+                        if re_match:
+                            # Format the replacement string
+                            new_line =  "\\fbox{\\textbf{IMAGE:} " \
+                                        + re_match.group(1) \
+                                        + "}"
+                            # Insert the replacement
+                            new_line = line.replace(re_match.group(0), new_line)
+                            sanitised_file_str += new_line
+                        else:
+                            # Keep the line as-is
+                            sanitised_file_str += line
+
+                    ## Write sanitised file to disk
+                    new_name = base_filename.replace("md", input_type + ".md")
+                    sanitised_filename = os.path.join(tmpdirname, new_name)
+                    logging.debug("Writing sanitised MD file to '%s'", sanitised_filename)
+                    with open(sanitised_filename, 'w', encoding="utf-8") as sanitised_file:
+                        print(sanitised_file_str, file=sanitised_file)
+
+            except (OSError):
+                logging.critical("Could not open file %s", input_md)
+                raise
+
+        ## Create ZIP of MD files
+        zip_name = os.path.join(os.getcwd(), os.path.splitext(base_filename)[0])
+        output_zip_filename = createZipArchive(tmpdirname, zip_name)
+    # tmpdirname will be deleted now
+
+    return output_zip_filename
+# end createZipCompareMode()
 
 if __name__ == '__main__':
     main()
