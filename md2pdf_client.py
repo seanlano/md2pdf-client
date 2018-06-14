@@ -165,13 +165,20 @@ def main():
         attempts = 4
         have_pdf = False
 
-        logging.info("Will wait 10 seconds then try to download PDF")
+        # Use a variable delay time
+        if args.compare:
+            # Use a much longer delay for compare mode, since it is slower
+            delay_time = 25
+        else:
+            delay_time = 7
+
+        logging.info("Will wait %i seconds then try to download PDF", delay_time)
 
         # Remove the ZIP archive
         os.remove(output_zip_filename)
 
         while attempts > 0:
-            time.sleep(10)
+            time.sleep(delay_time)
             receive = requests.get(get_string)
 
             if(receive.status_code == 200):
