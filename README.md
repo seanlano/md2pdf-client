@@ -38,17 +38,17 @@ See [the md2pdf-webserver hompage for more information](https://github.com/seanl
 Usage is quite simple, run `md2pdf-client -h` for more information:
 
 ```
-usage: md2pdf_client.py [-h] [--set-default OPTION VALUE] [-s ADDRESS[:PORT]]
-                        [--proto {http,https}] [-t TEMPLATE]
-                        [FILEPATH]
-
-md2pdf client - connect to an md2pdf server and create a PDF file
+md2pdf client v1.1.0 - connect to an md2pdf server and create a PDF file
 
 positional arguments:
   FILEPATH              Input Markdown file to be converted
 
 optional arguments:
   -h, --help            show this help message and exit
+  -c FILEPATH, --compare FILEPATH
+                        Activates 'compare' mode. Specify the file to compare
+                        changes with, e.g.: 'md2pdf-client --compare
+                        path/file-old.md path/file-new.md'
   --set-default OPTION VALUE
                         Change a default value for an option. Use the full
                         argument name, separated by a space, e.g.: '--set-
@@ -72,6 +72,7 @@ optional arguments:
 - If you use the `--template` option, don't forget that the template must also exist in the server - you can't use a local template (at least not yet).
 - If something doesn't work on the server end, you should get a `.log` file in the same directory as your input Markdown file - take a look in there for more information.
 - If something doesn't work on the client end, it can be helpful to run `md2pdf-client` from the command line to check the output.
+- Compare mode can only be used from the command-line, it won't show up in the "Open With" menu. Use the flag `--compare` followed by the path to the _old_ version, then the path to the _new_ version. The output PDF will be in the location of the new Markdown version. Images are removed in compare mode. 
 
 ## Installation
 
