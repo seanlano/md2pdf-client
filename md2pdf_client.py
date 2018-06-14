@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 '''
 
 global __version__
-__version__ = "1.0.2"
+__version__ = "1.1.0"
 
 import argparse
 import requests
@@ -165,13 +165,13 @@ def main():
         attempts = 4
         have_pdf = False
 
-        logging.info("Will wait 7 seconds then try to download PDF")
+        logging.info("Will wait 10 seconds then try to download PDF")
 
         # Remove the ZIP archive
         os.remove(output_zip_filename)
 
         while attempts > 0:
-            time.sleep(7)
+            time.sleep(10)
             receive = requests.get(get_string)
 
             if(receive.status_code == 200):
