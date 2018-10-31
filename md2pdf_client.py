@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 '''
 
 global __version__
-__version__ = "1.1.0"
+__version__ = "1.1.1"
 
 import argparse
 import requests
@@ -144,7 +144,8 @@ def main():
         headers['x-latex-compare'] = "true"
         logging.debug(headers)
     url = proto_string + "://" + server_address + "/upload"
-    files = {'ufile': open(output_zip_filename, 'rb')}
+    file_handler = open(output_zip_filename, 'rb')
+    files = {'ufile': file_handler}
 
     try:
         send = requests.post(url, headers=headers, files=files)
@@ -154,6 +155,7 @@ def main():
         logging.error("Server connection error - %s" % err)
         status_code = -3
 
+    file_handler.close()
 
     ## Request the PDF from the server
     if(status_code == 200):
@@ -174,8 +176,12 @@ def main():
 
         logging.info("Will wait %i seconds then try to download PDF", delay_time)
 
-        # Remove the ZIP archive
-        os.remove(output_zip_filename)
+        try:
+            # Remove the ZIP archive
+            os.remove(output_zip_filename)
+        except:
+            # Couldn't delete for some reason, not a big deal
+            logging.error("Couldn't delete file: %s", output_zip_filename)
 
         while attempts > 0:
             time.sleep(delay_time)
