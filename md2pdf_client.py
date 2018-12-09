@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 '''
 
 global __version__
-__version__ = "1.1.1"
+__version__ = "1.2.0"
 
 import argparse
 import requests
