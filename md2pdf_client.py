@@ -115,6 +115,10 @@ def main():
     server_address = args.server
     proto_string = args.proto
 
+    # Parse the YAML metadata
+    metadata = parseMetadata(filename)
+    logging.debug("Metadata: {}".format(metadata))
+
     ## Check for compare mode
     if args.compare:
         # Compare mode
@@ -138,6 +142,10 @@ def main():
     if args.template:
         logging.info("Using template override '%s'", args.template)
         headers['x-latex-template'] = args.template
+        logging.debug(headers)
+    elif 'template' in metadata:
+        logging.info("Using template from metadata '%s'", metadata['template'])
+        headers['x-latex-template'] = metadata['template']
         logging.debug(headers)
     if args.compare:
         logging.debug("Setting 'compare mode' header")
@@ -367,6 +375,39 @@ def createZipCompareMode(input_md_old, input_md_new):
 
     return output_zip_filename
 # end createZipCompareMode()
+
+def parseMetadata(input_md):
+    '''Helper function to search through the metadata section of an input MD
+    file to extract various settings. Returns a dict.'''
+    return_dict = {}
+    try:
+        with open(input_md, 'rt', encoding="utf-8") as in_file:
+            logging.debug("Searching for metadata in file '%s'", input_md)
+            line_ctr = 0
+            yaml_str = ""
+            for line in in_file:
+                # The first line MUST be three dashes if it is YAML metadata
+                if line_ctr == 0:
+                    if line.find("---") == -1:
+                        logging.warning("First line is NOT three dashes '---', not parsing YAML metadata")
+                        return return_dict
+                elif (line.find("---") > -1) or (line.find("...") > -1):
+                    # End of the YAML block
+                    break
+                else:
+                    # Accumulate strings, to then parse as YAML
+                    yaml_str += line
+                line_ctr += 1
+
+        # Parse the YAML
+        return_dict = dict(yaml.load(yaml_str))
+    except:
+        pass
+        # TODO: Handle errors
+
+    return return_dict
+
+# end parseMetadata
 
 if __name__ == '__main__':
     main()
